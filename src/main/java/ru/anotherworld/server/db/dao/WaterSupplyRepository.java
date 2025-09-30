@@ -15,4 +15,6 @@ public interface WaterSupplyRepository extends CrudRepository<WaterSupplyPE, Int
     List<WaterSupplyPE> findByDebtGreaterThan(Float debt);
 
     List<WaterSupplyPE> findAll();
+
+    Optional<WaterSupplyPE> findByApartmentId(Integer apartmentId);
 }

@@ -4,6 +4,7 @@ import ru.anotherworld.server.db.model.ElectricityPE;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.repository.CrudRepository;
+import ru.anotherworld.server.db.model.WaterSupplyPE;
 
 /**
  * Описывает интерфейс для доступа к базе данных потребления электроэнергии
@@ -15,4 +16,6 @@ public interface ElectricityRepository extends CrudRepository<ElectricityPE, Int
     List<ElectricityPE> findByDebtGreaterThan(Float debt);
 
     List<ElectricityPE> findAll();
+
+    Optional<ElectricityPE> findByApartmentId(Integer apartmentId);
 }

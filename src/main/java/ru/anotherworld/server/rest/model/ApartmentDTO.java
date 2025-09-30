@@ -28,8 +28,11 @@ public class ApartmentDTO {
     @Schema(description = "Этаж")
     private Integer floor;
 
-    @Schema(description = "Здание")
-    private BuildingDTO building;
+    @Schema(description = "Идентификатор здания")
+    private Integer buildingId;
+
+    @Schema(description = "Название здания")
+    private String buildingName;
 
     @Schema(description = "Данные по электроэнергии")
     private ElectricityDTO electricity;

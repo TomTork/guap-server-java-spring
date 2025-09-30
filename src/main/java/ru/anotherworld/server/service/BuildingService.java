@@ -1,8 +1,3 @@
-/*
- * this code is available under GNU GPL v3
- * https://www.gnu.org/licenses/gpl-3.0.en.html
- */
-
 package ru.anotherworld.server.service;
 
 import ru.anotherworld.server.rest.model.BuildingDTO;
@@ -17,6 +12,8 @@ public interface BuildingService {
     void delete(Integer id);
 
     BuildingDTO add(String name, String code);
+
+    BuildingDTO update(Integer id, String name, String code);
 
     BuildingDTO findByCode(String code);
 

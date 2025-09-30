@@ -1,7 +1,3 @@
-/*
- * this code is available under GNU GPL v3
- * https://www.gnu.org/licenses/gpl-3.0.en.html
- */
 package ru.anotherworld.server.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,28 +38,52 @@ public class ElectricityServiceImpl implements ElectricityService {
     public ElectricityDTO add(Long day, Long night, Float debt, Boolean active, Integer apartmentId) {
         ApartmentPE apartment = apartmentRepository.findById(apartmentId)
                 .orElseThrow(() -> new RuntimeException("Apartment not found with id: " + apartmentId));
-
-        ElectricityPE electricity = new ElectricityPE(day, night, debt, active, apartment);
-        return objectMapper.convertValue(electricityRepository.save(electricity), ElectricityDTO.class);
-    }
-
-    @Override
-    public ElectricityDTO update(Integer apartmentId, Long day, Long night, Float debt, Boolean active) {
-        ElectricityPE electricity = electricityRepository.findById(apartmentId)
-                .orElseThrow(() -> new RuntimeException("Electricity record not found for apartment id: " + apartmentId));
-
+        ElectricityPE electricity = new ElectricityPE();
+        electricity.setId(apartmentId);
         electricity.setDay(day);
         electricity.setNight(night);
         electricity.setDebt(debt);
         electricity.setActive(active);
+        electricity.setApartment(apartment);
+        return convertToElectricityDTO(electricityRepository.save(electricity));
+    }
 
+    private ElectricityDTO convertToElectricityDTO(ElectricityPE electricityPE) {
+        ElectricityDTO electricityDTO = new ElectricityDTO();
+        electricityDTO.setId(electricityPE.getId());
+        electricityDTO.setDay(electricityPE.getDay());
+        electricityDTO.setNight(electricityPE.getNight());
+        electricityDTO.setDebt(electricityPE.getDebt());
+        electricityDTO.setActive(electricityPE.getActive());
+        return electricityDTO;
+    }
+
+    @Override
+    public ElectricityDTO update(Integer id, Long day, Long night, Float debt, Boolean active) {
+        System.out.println("status111" + id.toString() + day.toString() + night.toString() + debt.toString());
+        ElectricityPE electricity = new ElectricityPE();
+//        ElectricityPE electricity = electricityRepository.findById(id)
+//                .orElseThrow(() -> new RuntimeException("Electricity record not found for id: " + id));
+        electricity.setId(id);
+        electricity.setDay(day);
+        electricity.setNight(night);
+        electricity.setDebt(debt);
+        electricity.setActive(active);
         return objectMapper.convertValue(electricityRepository.save(electricity), ElectricityDTO.class);
     }
 
     @Override
     public ElectricityDTO findByApartmentId(Integer apartmentId) {
-        var electricityPE = electricityRepository.findById(apartmentId);
-        return electricityPE.map(electricity -> objectMapper.convertValue(electricity, ElectricityDTO.class)).orElse(null);
+        return electricityRepository.findByApartmentId(apartmentId)
+                .map(electricity -> objectMapper.convertValue(electricity, ElectricityDTO.class))
+                .orElse(null);
+    }
+
+    @Override
+    public ElectricityDTO findById(Integer id) {
+        return electricityRepository.findById(id)
+                .map(electricity -> objectMapper.convertValue(electricity, ElectricityDTO.class))
+                .orElse(null);
     }
 
     @Override

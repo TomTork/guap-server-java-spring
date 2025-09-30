@@ -10,6 +10,9 @@ import lombok.Data;
 @Schema(description = "Электроэнергия")
 public class ElectricityDTO {
 
+    @Schema(description = "Идентификатор записи")
+    private Integer id;
+
     @Schema(description = "Дневное потребление")
     private Long day;
 

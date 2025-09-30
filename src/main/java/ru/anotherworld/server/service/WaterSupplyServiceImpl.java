@@ -1,7 +1,3 @@
-/*
- * this code is available under GNU GPL v3
- * https://www.gnu.org/licenses/gpl-3.0.en.html
- */
 package ru.anotherworld.server.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,9 +44,9 @@ public class WaterSupplyServiceImpl implements WaterSupplyService {
     }
 
     @Override
-    public WaterSupplyDTO update(Integer apartmentId, Long cold, Long hot, Float debt, Boolean active) {
-        WaterSupplyPE waterSupply = waterSupplyRepository.findById(apartmentId)
-                .orElseThrow(() -> new RuntimeException("Water supply record not found for apartment id: " + apartmentId));
+    public WaterSupplyDTO update(Integer id, Long cold, Long hot, Float debt, Boolean active) {
+        WaterSupplyPE waterSupply = waterSupplyRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Water supply record not found for id: " + id));
 
         waterSupply.setCold(cold);
         waterSupply.setHot(hot);
@@ -62,8 +58,16 @@ public class WaterSupplyServiceImpl implements WaterSupplyService {
 
     @Override
     public WaterSupplyDTO findByApartmentId(Integer apartmentId) {
-        var waterSupplyPE = waterSupplyRepository.findById(apartmentId);
-        return waterSupplyPE.map(waterSupply -> objectMapper.convertValue(waterSupply, WaterSupplyDTO.class)).orElse(null);
+        return waterSupplyRepository.findByApartmentId(apartmentId)
+                .map(waterSupply -> objectMapper.convertValue(waterSupply, WaterSupplyDTO.class))
+                .orElse(null);
+    }
+
+    @Override
+    public WaterSupplyDTO findById(Integer id) {
+        return waterSupplyRepository.findById(id)
+                .map(waterSupplyPE -> objectMapper.convertValue(waterSupplyPE, WaterSupplyDTO.class))
+                .orElse(null);
     }
 
     @Override

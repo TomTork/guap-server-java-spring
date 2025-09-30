@@ -1,7 +1,3 @@
-/*
- * this code is available under GNU GPL v3
- * https://www.gnu.org/licenses/gpl-3.0.en.html
- */
 package ru.anotherworld.server.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,6 +12,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import ru.anotherworld.server.rest.model.ElectricityDTO;
+import ru.anotherworld.server.rest.model.WaterSupplyDTO;
 
 @Slf4j
 @Service
@@ -29,8 +27,45 @@ public class ApartmentServiceImpl implements ApartmentService {
     @Override
     public List<ApartmentDTO> listAll() {
         return apartmentRepository.findAll().stream()
-                .map(apartmentPE -> objectMapper.convertValue(apartmentPE, ApartmentDTO.class))
+                .map(this::convertToApartmentDTO)
                 .collect(Collectors.toList());
+    }
+
+    private ApartmentDTO convertToApartmentDTO(ApartmentPE apartmentPE) {
+        ApartmentDTO apartmentDTO = new ApartmentDTO();
+        apartmentDTO.setId(apartmentPE.getId());
+        apartmentDTO.setNumber(apartmentPE.getNumber());
+        apartmentDTO.setTotalSquare(apartmentPE.getTotalSquare());
+        apartmentDTO.setLivingSquare(apartmentPE.getLivingSquare());
+        apartmentDTO.setRoomsAmount(apartmentPE.getRoomsAmount());
+        apartmentDTO.setFloor(apartmentPE.getFloor());
+        
+        if (apartmentPE.getBuilding() != null) {
+            apartmentDTO.setBuildingId(apartmentPE.getBuilding().getId());
+            apartmentDTO.setBuildingName(apartmentPE.getBuilding().getName());
+        }
+        
+        if (apartmentPE.getElectricity() != null) {
+            ElectricityDTO electricityDTO = new ElectricityDTO();
+            electricityDTO.setId(apartmentPE.getElectricity().getId());
+            electricityDTO.setDay(apartmentPE.getElectricity().getDay());
+            electricityDTO.setNight(apartmentPE.getElectricity().getNight());
+            electricityDTO.setDebt(apartmentPE.getElectricity().getDebt());
+            electricityDTO.setActive(apartmentPE.getElectricity().getActive());
+            apartmentDTO.setElectricity(electricityDTO);
+        }
+        
+        if (apartmentPE.getWaterSupply() != null) {
+            WaterSupplyDTO waterSupplyDTO = new WaterSupplyDTO();
+            waterSupplyDTO.setId(apartmentPE.getWaterSupply().getId());
+            waterSupplyDTO.setCold(apartmentPE.getWaterSupply().getCold());
+            waterSupplyDTO.setHot(apartmentPE.getWaterSupply().getHot());
+            waterSupplyDTO.setDebt(apartmentPE.getWaterSupply().getDebt());
+            waterSupplyDTO.setActive(apartmentPE.getWaterSupply().getActive());
+            apartmentDTO.setWaterSupply(waterSupplyDTO);
+        }
+        
+        return apartmentDTO;
     }
 
     @Override
@@ -44,19 +79,31 @@ public class ApartmentServiceImpl implements ApartmentService {
                 .orElseThrow(() -> new RuntimeException("Building not found with id: " + buildingId));
 
         ApartmentPE apartment = new ApartmentPE(number, totalSquare, livingSquare, roomsAmount, floor, building);
+        return convertToApartmentDTO(apartmentRepository.save(apartment));
+    }
+
+    @Override
+    public ApartmentDTO update(Integer id, String number, Float totalSquare, Float livingSquare, Integer roomsAmount, Integer floor, Integer buildingId) {
+        ApartmentPE apartment = apartmentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Building not found with id: " + id));
+        apartment.setNumber(number);
+        apartment.setTotalSquare(totalSquare);
+        apartment.setLivingSquare(livingSquare);
+        apartment.setRoomsAmount(roomsAmount);
+        apartment.setFloor(floor);
         return objectMapper.convertValue(apartmentRepository.save(apartment), ApartmentDTO.class);
     }
 
     @Override
     public ApartmentDTO findByNumber(String number) {
         var apartmentPE = apartmentRepository.findByNumber(number);
-        return apartmentPE.map(apartment -> objectMapper.convertValue(apartment, ApartmentDTO.class)).orElse(null);
+        return apartmentPE.map(this::convertToApartmentDTO).orElse(null);
     }
 
     @Override
     public ApartmentDTO findById(Integer id) {
         var apartmentPE = apartmentRepository.findById(id);
-        return apartmentPE.map(apartment -> objectMapper.convertValue(apartment, ApartmentDTO.class)).orElse(null);
+        return apartmentPE.map(this::convertToApartmentDTO).orElse(null);
     }
 
     @Override
@@ -65,14 +112,14 @@ public class ApartmentServiceImpl implements ApartmentService {
                 .orElseThrow(() -> new RuntimeException("Building not found with id: " + buildingId));
 
         return apartmentRepository.findByBuilding(building).stream()
-                .map(apartmentPE -> objectMapper.convertValue(apartmentPE, ApartmentDTO.class))
+                .map(this::convertToApartmentDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<ApartmentDTO> findByFloor(Integer floor) {
         return apartmentRepository.findByFloor(floor).stream()
-                .map(apartmentPE -> objectMapper.convertValue(apartmentPE, ApartmentDTO.class))
+                .map(this::convertToApartmentDTO)
                 .collect(Collectors.toList());
     }
 }

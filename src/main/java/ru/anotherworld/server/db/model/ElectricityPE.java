@@ -1,7 +1,3 @@
-/*
- * this code is available under GNU GPL v3
- * https://www.gnu.org/licenses/gpl-3.0.en.html
- */
 package ru.anotherworld.server.db.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -10,7 +6,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
@@ -37,6 +32,7 @@ public class ElectricityPE implements Serializable {
         this.debt = debt != null ? debt : 0.0f;
         this.active = active != null ? active : true;
         this.apartment = apartment;
+        this.id = apartment.getId();
     }
 
     @Id

@@ -10,6 +10,9 @@ import lombok.Data;
 @Schema(description = "Водоснабжение")
 public class WaterSupplyDTO {
 
+    @Schema(description = "Идентификатор записи")
+    private Integer id;
+
     @Schema(description = "Потребление холодной воды")
     private Long cold;
 
