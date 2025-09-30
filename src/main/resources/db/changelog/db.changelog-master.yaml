@@ -1,12 +1,12 @@
 databaseChangeLog:
   - changeSet:
       id: init-database
-      author: pavel.stepanov
+      author: tomtork
       preConditions:
         - onFail: HALT
           not:
             tableExists:
-              tableName: school
+              tableName: building
       changes:
         - createTable:
             columns:
@@ -15,20 +15,21 @@ databaseChangeLog:
                   constraints:
                     nullable: false
                     primaryKey: true
-                    primaryKeyName: school_pkey
-                  name: school_id
-                  type: BIGINT
+                    primaryKeyName: building_pkey
+                  name: building_id
+                  type: INTEGER
               - column:
                   constraints:
                     nullable: false
-                  name: school_number
-                  type: BIGINT
-              - column:
-                  constraints:
-                    nullable: false
-                  name: school_name
+                  name: building_name
                   type: VARCHAR(255)
-            tableName: school
+              - column:
+                  constraints:
+                    nullable: false
+                    unique: true
+                  name: building_code
+                  type: VARCHAR(50)
+            tableName: building
         - createTable:
             columns:
               - column:
@@ -36,23 +37,119 @@ databaseChangeLog:
                   constraints:
                     nullable: false
                     primaryKey: true
-                    primaryKeyName: batch_pkey
-                  name: batch_id
+                    primaryKeyName: apartment_pkey
+                  name: apartment_id
+                  type: INTEGER
+              - column:
+                  constraints:
+                    nullable: false
+                  name: apartment_number
+                  type: VARCHAR(50)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: total_square
+                  type: FLOAT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: living_square
+                  type: FLOAT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: rooms_amount
+                  type: INTEGER
+              - column:
+                  constraints:
+                    nullable: false
+                  name: floor
+                  type: INTEGER
+              - column:
+                  constraints:
+                    nullable: false
+                  name: building_id
+                  type: INTEGER
+            tableName: apartment
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: electricity_pkey
+                  name: apartment_id
+                  type: INTEGER
+              - column:
+                  constraints:
+                    nullable: false
+                  name: day_consumption
                   type: BIGINT
               - column:
                   constraints:
                     nullable: false
-                  name: batch_number
-                  type: VARCHAR(255)
+                  name: night_consumption
+                  type: BIGINT
               - column:
                   constraints:
                     nullable: false
-                  name: batch_school_id
+                  name: debt
+                  type: FLOAT
+                  defaultValue: 0.0
+              - column:
+                  constraints:
+                    nullable: false
+                  name: active
+                  type: BOOLEAN
+                  defaultValue: true
+            tableName: electricity
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: water_supply_pkey
+                  name: apartment_id
+                  type: INTEGER
+              - column:
+                  constraints:
+                    nullable: false
+                  name: cold_consumption
                   type: BIGINT
-            tableName: batch
-        -  addForeignKeyConstraint:
-            baseColumnNames:  batch_school_id
-            baseTableName:  batch
-            constraintName:  fk_batch_to_school
-            referencedColumnNames:  school_id
-            referencedTableName:  school
+              - column:
+                  constraints:
+                    nullable: false
+                  name: hot_consumption
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: debt
+                  type: FLOAT
+                  defaultValue: 0.0
+              - column:
+                  constraints:
+                    nullable: false
+                  name: active
+                  type: BOOLEAN
+                  defaultValue: true
+            tableName: water_supply
+        - addForeignKeyConstraint:
+            baseColumnNames: building_id
+            baseTableName: apartment
+            constraintName: fk_apartment_to_building
+            referencedColumnNames: building_id
+            referencedTableName: building
+        - addForeignKeyConstraint:
+            baseColumnNames: apartment_id
+            baseTableName: electricity
+            constraintName: fk_electricity_to_apartment
+            referencedColumnNames: apartment_id
+            referencedTableName: apartment
+        - addForeignKeyConstraint:
+            baseColumnNames: apartment_id
+            baseTableName: water_supply
+            constraintName: fk_water_supply_to_apartment
+            referencedColumnNames: apartment_id
+            referencedTableName: apartment
