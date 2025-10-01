@@ -47,7 +47,7 @@ public class ApartmentRestController {
     }
 
     @RequestMapping(value = "/{number}/{totalSquare}/{livingSquare}/{roomsAmount}/{floor}/{buildingId}", method = RequestMethod.POST)
-    @Operation(summary = "Создать или обновить квартиру", description = "Создать или обновить квартиру в указанном здании")
+    @Operation(summary = "Создать квартиру", description = "Создать квартиру в указанном здании")
     public ResponseEntity<ApartmentDTO> add(
             @PathVariable("number") @Parameter(description = "Номер квартиры") String number,
             @PathVariable("totalSquare") @Parameter(description = "Общая площадь") Float totalSquare,
