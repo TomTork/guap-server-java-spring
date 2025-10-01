@@ -26,13 +26,11 @@ public class ElectricityPE implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    public ElectricityPE(Long day, Long night, Float debt, Boolean active, ApartmentPE apartment) {
+    public ElectricityPE(Long day, Long night, Float debt, Boolean active) {
         this.day = day;
         this.night = night;
         this.debt = debt != null ? debt : 0.0f;
         this.active = active != null ? active : true;
-        this.apartment = apartment;
-        this.id = apartment.getId();
     }
 
     @Id

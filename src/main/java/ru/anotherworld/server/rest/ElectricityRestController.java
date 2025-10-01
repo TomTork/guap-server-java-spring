@@ -42,7 +42,7 @@ public class ElectricityRestController {
         electricityService.delete(id);
     }
 
-    @RequestMapping(value = "/{day}/{night}/{debt}/{active}/{apartmentId}", method = RequestMethod.POST)
+    @RequestMapping(value = "/{day}/{night}/{debt}/{active}/{apartmentId}", method = RequestMethod.PUT)
     @Operation(summary = "Создать новую запись электричества", description = "Создать запись потребления электричества для квартиры")
     public ResponseEntity<ElectricityDTO> add(
             @PathVariable("day") @Parameter(description = "Дневной тариф") Long day,
@@ -51,6 +51,17 @@ public class ElectricityRestController {
             @PathVariable("active") @Parameter(description = "Активность (true/false)") Boolean active,
             @PathVariable("apartmentId") @Parameter(description = "ID квартиры") Integer apartmentId) {
         return ResponseEntity.ok(electricityService.add(day, night, debt, active, apartmentId));
+    }
+
+    @RequestMapping(value = "/{day}/{night}/{debt}/{active}/{apartmentId}", method = RequestMethod.POST)
+    @Operation(summary = "Обновить новую запись электричества", description = "Обновить запись потребления электричества для квартиры")
+    public ResponseEntity<ElectricityDTO> update(
+            @PathVariable("day") @Parameter(description = "Дневной тариф") Long day,
+            @PathVariable("night") @Parameter(description = "Ночной тариф") Long night,
+            @PathVariable("debt") @Parameter(description = "Задолженность") Float debt,
+            @PathVariable("active") @Parameter(description = "Активность (true/false)") Boolean active,
+            @PathVariable("apartmentId") @Parameter(description = "ID квартиры") Integer apartmentId) {
+        return ResponseEntity.ok(electricityService.update(apartmentId, day, night, debt, active));
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)

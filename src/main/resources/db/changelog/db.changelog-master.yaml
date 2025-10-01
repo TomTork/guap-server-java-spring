@@ -141,15 +141,18 @@ databaseChangeLog:
             constraintName: fk_apartment_to_building
             referencedColumnNames: building_id
             referencedTableName: building
+            onDelete: CASCADE
         - addForeignKeyConstraint:
             baseColumnNames: apartment_id
             baseTableName: electricity
             constraintName: fk_electricity_to_apartment
             referencedColumnNames: apartment_id
             referencedTableName: apartment
+            onDelete: CASCADE
         - addForeignKeyConstraint:
             baseColumnNames: apartment_id
             baseTableName: water_supply
             constraintName: fk_water_supply_to_apartment
             referencedColumnNames: apartment_id
             referencedTableName: apartment
+            onDelete: CASCADE

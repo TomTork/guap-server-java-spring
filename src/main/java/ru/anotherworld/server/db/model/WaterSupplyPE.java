@@ -26,12 +26,11 @@ public class WaterSupplyPE implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    public WaterSupplyPE(Long cold, Long hot, Float debt, Boolean active, ApartmentPE apartment) {
+    public WaterSupplyPE(Long cold, Long hot, Float debt, Boolean active) {
         this.cold = cold;
         this.hot = hot;
         this.debt = debt != null ? debt : 0.0f;
         this.active = active != null ? active : true;
-        this.apartment = apartment;
     }
 
     @Id

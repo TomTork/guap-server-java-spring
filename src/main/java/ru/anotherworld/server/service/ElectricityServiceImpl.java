@@ -19,7 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 public class ElectricityServiceImpl implements ElectricityService {
 
     private final ElectricityRepository electricityRepository;
-    private final ApartmentRepository apartmentRepository;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -36,15 +35,12 @@ public class ElectricityServiceImpl implements ElectricityService {
 
     @Override
     public ElectricityDTO add(Long day, Long night, Float debt, Boolean active, Integer apartmentId) {
-        ApartmentPE apartment = apartmentRepository.findById(apartmentId)
-                .orElseThrow(() -> new RuntimeException("Apartment not found with id: " + apartmentId));
         ElectricityPE electricity = new ElectricityPE();
         electricity.setId(apartmentId);
         electricity.setDay(day);
         electricity.setNight(night);
         electricity.setDebt(debt);
         electricity.setActive(active);
-        electricity.setApartment(apartment);
         return convertToElectricityDTO(electricityRepository.save(electricity));
     }
 
@@ -60,10 +56,7 @@ public class ElectricityServiceImpl implements ElectricityService {
 
     @Override
     public ElectricityDTO update(Integer id, Long day, Long night, Float debt, Boolean active) {
-        System.out.println("status111" + id.toString() + day.toString() + night.toString() + debt.toString());
         ElectricityPE electricity = new ElectricityPE();
-//        ElectricityPE electricity = electricityRepository.findById(id)
-//                .orElseThrow(() -> new RuntimeException("Electricity record not found for id: " + id));
         electricity.setId(id);
         electricity.setDay(day);
         electricity.setNight(night);

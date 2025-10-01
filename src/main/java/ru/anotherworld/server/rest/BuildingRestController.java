@@ -65,7 +65,7 @@ public class BuildingRestController {
         buildingService.delete(id);
     }
 
-    @Operation(summary = "Создать новое здание",
+    @Operation(summary = "Создать здание",
             description = "Создать новое здание в системе",
             responses = {
                 @ApiResponse(responseCode = "200",
@@ -120,5 +120,28 @@ public class BuildingRestController {
     public ResponseEntity<BuildingDTO> findById(@PathVariable("id")
             @Parameter(description = "Идентификатор здания") Integer id) {
         return ResponseEntity.ok(buildingService.findById(id));
+    }
+
+    @Operation(summary = "Обновить данные здания",
+            description = "Обновить данные существующего здания по идентификатору",
+            responses = {
+                @ApiResponse(responseCode = "200",
+                        description = "Успешное выполнение"),
+                @ApiResponse(responseCode = "401",
+                        description = "Требуется аутентификация"),
+                @ApiResponse(responseCode = "403",
+                        description = "Аутентификация предоставлена, но у пользователя нет доступа"),
+                @ApiResponse(responseCode = "404",
+                        description = "Ресурс не найден")
+            })
+    @RequestMapping(value = "/{id}/{name}/{code}", method = RequestMethod.PUT)
+    public ResponseEntity<BuildingDTO> update(
+            @PathVariable("id")
+            @Parameter(description = "Идентификатор здания") Integer id,
+            @PathVariable("name")
+            @Parameter(description = "Название здания") String name,
+            @PathVariable("code")
+            @Parameter(description = "Код здания") String code) {
+        return ResponseEntity.ok(buildingService.update(id, name, code));
     }
 }

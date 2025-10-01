@@ -47,7 +47,7 @@ public class ApartmentRestController {
     }
 
     @RequestMapping(value = "/{number}/{totalSquare}/{livingSquare}/{roomsAmount}/{floor}/{buildingId}", method = RequestMethod.POST)
-    @Operation(summary = "Создать новую квартиру", description = "Создать квартиру в указанном здании")
+    @Operation(summary = "Создать или обновить квартиру", description = "Создать или обновить квартиру в указанном здании")
     public ResponseEntity<ApartmentDTO> add(
             @PathVariable("number") @Parameter(description = "Номер квартиры") String number,
             @PathVariable("totalSquare") @Parameter(description = "Общая площадь") Float totalSquare,
@@ -68,6 +68,19 @@ public class ApartmentRestController {
     @Operation(summary = "Поиск квартиры по ID", description = "Найти квартиру по идентификатору")
     public ResponseEntity<ApartmentDTO> findById(@PathVariable("id") @Parameter(description = "ID квартиры") Integer id) {
         return ResponseEntity.ok(apartmentService.findById(id));
+    }
+
+    @RequestMapping(value = "/{id}/{number}/{totalSquare}/{livingSquare}/{roomsAmount}/{floor}/{buildingId}", method = RequestMethod.PUT)
+    @Operation(summary = "Обновить данные квартиры", description = "Обновить данные существующей квартиры по ID")
+    public ResponseEntity<ApartmentDTO> update(
+            @PathVariable("id") @Parameter(description = "ID квартиры") Integer id,
+            @PathVariable("number") @Parameter(description = "Номер квартиры") String number,
+            @PathVariable("totalSquare") @Parameter(description = "Общая площадь") Float totalSquare,
+            @PathVariable("livingSquare") @Parameter(description = "Жилая площадь") Float livingSquare,
+            @PathVariable("roomsAmount") @Parameter(description = "Количество комнат") Integer roomsAmount,
+            @PathVariable("floor") @Parameter(description = "Этаж") Integer floor,
+            @PathVariable("buildingId") @Parameter(description = "ID здания") Integer buildingId) {
+        return ResponseEntity.ok(apartmentService.update(id, number, totalSquare, livingSquare, roomsAmount, floor, buildingId));
     }
 
     @RequestMapping(value = "/building/{buildingId}", method = RequestMethod.GET)

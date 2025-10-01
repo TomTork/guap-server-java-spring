@@ -10,6 +10,7 @@ import ru.anotherworld.server.db.model.ApartmentPE;
 import ru.anotherworld.server.rest.model.WaterSupplyDTO;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,11 +37,24 @@ public class WaterSupplyServiceImpl implements WaterSupplyService {
 
     @Override
     public WaterSupplyDTO add(Long cold, Long hot, Float debt, Boolean active, Integer apartmentId) {
-        ApartmentPE apartment = apartmentRepository.findById(apartmentId)
-                .orElseThrow(() -> new RuntimeException("Apartment not found with id: " + apartmentId));
-
-        WaterSupplyPE waterSupply = new WaterSupplyPE(cold, hot, debt, active, apartment);
-        return objectMapper.convertValue(waterSupplyRepository.save(waterSupply), WaterSupplyDTO.class);
+        Optional<WaterSupplyPE> existingWaterSupply = waterSupplyRepository.findByApartmentId(apartmentId);
+        
+        if (existingWaterSupply.isPresent()) {
+            WaterSupplyPE waterSupply = existingWaterSupply.get();
+            waterSupply.setCold(cold);
+            waterSupply.setHot(hot);
+            waterSupply.setDebt(debt);
+            waterSupply.setActive(active);
+            return objectMapper.convertValue(waterSupplyRepository.save(waterSupply), WaterSupplyDTO.class);
+        } else {
+            WaterSupplyPE waterSupply = new WaterSupplyPE(cold, hot, debt, active);
+            waterSupply.setId(apartmentId);
+            waterSupply.setCold(cold);
+            waterSupply.setHot(hot);
+            waterSupply.setDebt(debt != null ? debt : 0.0f);
+            waterSupply.setActive(active != null ? active : true);
+            return objectMapper.convertValue(waterSupplyRepository.save(waterSupply), WaterSupplyDTO.class);
+        }
     }
 
     @Override

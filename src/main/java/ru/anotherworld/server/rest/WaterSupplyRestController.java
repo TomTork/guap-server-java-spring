@@ -42,7 +42,7 @@ public class WaterSupplyRestController {
         waterSupplyService.delete(id);
     }
 
-    @RequestMapping(value = "/{cold}/{hot}/{debt}/{active}/{apartmentId}", method = RequestMethod.POST)
+    @RequestMapping(value = "/{cold}/{hot}/{debt}/{active}/{apartmentId}", method = RequestMethod.PUT)
     @Operation(summary = "Создать новую запись водоснабжения", description = "Создать запись потребления воды для квартиры")
     public ResponseEntity<WaterSupplyDTO> add(
             @PathVariable("cold") @Parameter(description = "Холодная вода") Long cold,
@@ -51,6 +51,17 @@ public class WaterSupplyRestController {
             @PathVariable("active") @Parameter(description = "Активность (true/false)") Boolean active,
             @PathVariable("apartmentId") @Parameter(description = "ID квартиры") Integer apartmentId) {
         return ResponseEntity.ok(waterSupplyService.add(cold, hot, debt, active, apartmentId));
+    }
+
+    @RequestMapping(value = "/{cold}/{hot}/{debt}/{active}/{apartmentId}", method = RequestMethod.POST)
+    @Operation(summary = "Обновить существующую запись водоснабжения", description = "Обновить запись потребления воды для квартиры")
+    public ResponseEntity<WaterSupplyDTO> update(
+            @PathVariable("cold") @Parameter(description = "Холодная вода") Long cold,
+            @PathVariable("hot") @Parameter(description = "Горячая вода") Long hot,
+            @PathVariable("debt") @Parameter(description = "Задолженность") Float debt,
+            @PathVariable("active") @Parameter(description = "Активность (true/false)") Boolean active,
+            @PathVariable("apartmentId") @Parameter(description = "ID квартиры") Integer apartmentId) {
+        return ResponseEntity.ok(waterSupplyService.update(apartmentId, cold, hot, debt, active));
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
