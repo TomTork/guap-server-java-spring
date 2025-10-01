@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import ru.anotherworld.server.db.dao.WaterSupplyRepository;
 import ru.anotherworld.server.db.dao.ApartmentRepository;
 import ru.anotherworld.server.db.model.WaterSupplyPE;
-import ru.anotherworld.server.db.model.ApartmentPE;
 import ru.anotherworld.server.rest.model.WaterSupplyDTO;
 import java.util.List;
 import java.util.stream.Collectors;

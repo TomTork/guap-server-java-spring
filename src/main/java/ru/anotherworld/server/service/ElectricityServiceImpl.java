@@ -4,9 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 
 import ru.anotherworld.server.db.dao.ElectricityRepository;
-import ru.anotherworld.server.db.dao.ApartmentRepository;
 import ru.anotherworld.server.db.model.ElectricityPE;
-import ru.anotherworld.server.db.model.ApartmentPE;
 import ru.anotherworld.server.rest.model.ElectricityDTO;
 import java.util.List;
 import java.util.stream.Collectors;
