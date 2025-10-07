@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="auth-container">
+        <h1 class="auth-title">Регистрация</h1>
+        
+        <div th:if="${error}" class="alert alert-error" th:text="${error}">
+        </div>
+        
+        <div th:if="${success}" class="alert alert-success">
+            Регистрация прошла успешно! Теперь вы можете <a th:href="@{/login}" class="auth-link">войти</a>.
+        </div>
+        
+        <form class="auth-form" th:action="@{/register}" th:if="!${success}" method="post">
+            <div class="form-group">
+                <label for="username">Имя пользователя</label>
+                <input type="text" id="username" name="username" class="form-control" required autofocus>
+                <small class="form-text text-muted">От 3 до 20 символов (буквы, цифры, _)</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" name="password" class="form-control" required>
+                <small class="form-text text-muted">Не менее 6 символов</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="confirmPassword">Подтверждение пароля</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-block">Зарегистрироваться</button>
+        </form>
+        
+        <div class="auth-links">
+            Уже есть аккаунт? <a th:href="@{/login}" class="auth-link">Войти</a>
+        </div>
+    </div>
+</body>
+</html>
