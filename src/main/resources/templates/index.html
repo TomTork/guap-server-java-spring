@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      xmlns:thymeleaf-extras-springsecurity6="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <title>Система учета коммунальных услуг</title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial; margin: 20px; background: #f0f0f0; }
+        h1 { color: #333; }
+        a { color: blue; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .menu { 
+            background: white; 
+            padding: 15px; 
+            margin: 10px 0; 
+            border: 1px solid #ccc; 
+            border-radius: 5px; 
+            max-width: 800px;
+        }
+        .menu h3 { margin-top: 0; }
+        ul { list-style: none; padding: 0; }
+        li { margin: 8px 0; }
+        .footer { margin-top: 30px; font-size: 12px; color: #666; }
+        .header { display: flex; justify-content: space-between; align-items: center; }
+        .auth-links a { margin-left: 15px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Система учета коммунальных услуг</h1>
+        <div class="auth-links" th:if="${#authentication != null && #authentication.isAuthenticated()}">
+            <span><strong th:text="${#authentication.name}"></strong></span>
+            <form th:action="@{/logout}" method="post" style="display: inline; margin-left: 5px">
+                <button type="submit" style="background: none; border: none; color: blue; cursor: pointer; padding: 0; text-decoration: underline; font-size: inherit;">Выйти</button>
+            </form>
+        </div>
+        <div class="auth-links" th:unless="${#authentication != null && #authentication.isAuthenticated()}">
+            <a href="/login">Войти</a>
+            <a href="/register">Регистрация</a>
+        </div>
+    </div>
+
+    <div class="menu" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
+        <h3>Здания</h3>
+        <a href="/buildings">редактирование / просмотр</a>
+    </div>
+
+    <div class="menu" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
+        <h3>Квартиры</h3>
+        <a href="/apartments">редактирование / просмотр</a>
+    </div>
+
+    <div class="menu" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
+        <h3>Электроэнергия</h3>
+        <a href="/electricity">редактирование / просмотр</a>
+    </div>
+
+    <div class="menu" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
+        <h3>Водоснабжение</h3>
+        <a href="/watersupply">редактирование / просмотр</a>
+    </div>
+
+    <div class="menu">
+        <h3>API</h3>
+        <ul>
+            <li><a href='/public/rest/buildings'>Buildings</a></li>
+            <li><a href='/public/rest/apartments'>Apartments</a></li>
+            <li><a href='/public/rest/electricity'>Electricity</a></li>
+            <li><a href='/public/rest/watersupply'>Water</a></li>
+            <li th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
+                <a href='/swagger-ui/index.html'>Swagger</a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="footer">
+        <p>Лабораторная работа №4. Саиткулов Дмитрий, 4332</p>
+    </div>
+</body>
+</html>

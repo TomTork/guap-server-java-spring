@@ -28,7 +28,7 @@ public class AuthController {
     }
 
     @GetMapping("/register")
-    public String showRegistrationForm(Model model) {
+    public String showRegistrationForm() {
         return "register";
     }
 
@@ -39,7 +39,6 @@ public class AuthController {
             @RequestParam String confirmPassword,
             Model model) {
 
-        // Basic validation
         if (((InMemoryUserDetailsManager)userDetailsService).userExists(username)) {
             model.addAttribute("error", "Пользователь с таким именем уже существует");
             return "register";
@@ -56,7 +55,6 @@ public class AuthController {
         }
 
         try {
-            // Create new user with USER role
             UserDetails user = User.builder()
                     .username(username)
                     .password(passwordEncoder.encode(password))

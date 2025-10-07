@@ -25,15 +25,26 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/login", "/register", "/error",
-                                "/css/**", "/webjars/**"
+                                "/login", 
+                                "/register", 
+                                "/error",
+                                "/css/**", 
+                                "/webjars/**",
+                                "/public/rest/**"
                         ).permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers(
+                                "/admin/**",
+                                "/buildings/**",
+                                "/apartments/**",
+                                "/electricity/**",
+                                "/watersupply/**",
+                                "/swagger-ui/**"
+                        ).hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
-                        .loginProcessingUrl("/login") // POST-обработка формы
+                        .loginProcessingUrl("/login")
                         .defaultSuccessUrl("/", true)
                         .failureUrl("/login?error=true")
                         .permitAll()
@@ -52,7 +63,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // Один UserDetailsService для всех (используется authManager’ом)
     @Bean
     public UserDetailsService userDetailsService(PasswordEncoder encoder) {
         var user = User.builder()
@@ -64,13 +74,12 @@ public class SecurityConfig {
         var admin = User.builder()
                 .username("admin")
                 .password(encoder.encode("admin"))
-                .roles("ADMIN", "USER")
+                .roles("ADMIN")
                 .build();
 
         return new InMemoryUserDetailsManager(user, admin);
     }
 
-    // Настройка аутентификации с этим же UserDetailsService
     @Bean
     public AuthenticationManager authManager(HttpSecurity http, PasswordEncoder encoder, UserDetailsService uds) throws Exception {
         return http.getSharedObject(AuthenticationManagerBuilder.class)
@@ -80,13 +89,11 @@ public class SecurityConfig {
                 .build();
     }
 
-    // BCrypt для хэширования паролей
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // Исключаем из безопасности служебные пути
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring().requestMatchers(
