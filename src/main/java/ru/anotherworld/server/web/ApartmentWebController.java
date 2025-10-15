@@ -1,6 +1,8 @@
 package ru.anotherworld.server.web;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -9,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.anotherworld.server.rest.model.ApartmentDTO;
 import ru.anotherworld.server.service.ApartmentService;
 import ru.anotherworld.server.service.BuildingService;
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/apartments")
@@ -32,25 +36,35 @@ public class ApartmentWebController {
     }
 
     @PostMapping("/add")
-    public String addApartment(
-            @Validated @ModelAttribute("apartment") ApartmentDTO apartment,
-            BindingResult result,
-            Model model) {
+    @ResponseBody
+    public ResponseEntity<?> addApartment(
+            @Validated @RequestBody ApartmentDTO apartment,
+            BindingResult result) {
         
+        Map<String, Object> response = new HashMap<>();
         if (result.hasErrors()) {
-            model.addAttribute("buildings", buildingService.listAll());
-            return "apartment-form";
+            response.put("success", false);
+            response.put("errors", result.getAllErrors());
+            return ResponseEntity.badRequest().body(response);
         }
         
-        apartmentService.add(
-            apartment.getNumber(),
-            apartment.getTotalSquare(),
-            apartment.getLivingSquare(),
-            apartment.getRoomsAmount(),
-            apartment.getFloor(),
-            apartment.getBuildingId()
-        );
-        return "redirect:/apartments";
+        try {
+            apartmentService.add(
+                apartment.getNumber(),
+                apartment.getTotalSquare(),
+                apartment.getLivingSquare(),
+                apartment.getRoomsAmount(),
+                apartment.getFloor(),
+                apartment.getBuildingId()
+            );
+            response.put("success", true);
+            response.put("message", "Apartment added successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error adding apartment: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
     @GetMapping("/edit/{id}")
@@ -65,31 +79,51 @@ public class ApartmentWebController {
     }
 
     @PostMapping("/edit")
-    public String updateApartment(
-            @Validated @ModelAttribute("apartment") ApartmentDTO apartment,
-            BindingResult result,
-            Model model) {
+    @ResponseBody
+    public ResponseEntity<?> updateApartment(
+            @Validated @RequestBody ApartmentDTO apartment,
+            BindingResult result) {
         
+        Map<String, Object> response = new HashMap<>();
         if (result.hasErrors()) {
-            model.addAttribute("buildings", buildingService.listAll());
-            return "apartment-form";
+            response.put("success", false);
+            response.put("errors", result.getAllErrors());
+            return ResponseEntity.badRequest().body(response);
         }
         
-        apartmentService.update(
-            apartment.getId(),
-            apartment.getNumber(),
-            apartment.getTotalSquare(),
-            apartment.getLivingSquare(),
-            apartment.getRoomsAmount(),
-            apartment.getFloor(),
-            apartment.getBuildingId()
-        );
-        return "redirect:/apartments";
+        try {
+            apartmentService.update(
+                apartment.getId(),
+                apartment.getNumber(),
+                apartment.getTotalSquare(),
+                apartment.getLivingSquare(),
+                apartment.getRoomsAmount(),
+                apartment.getFloor(),
+                apartment.getBuildingId()
+            );
+            response.put("success", true);
+            response.put("message", "Apartment updated successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error updating apartment: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
     @PostMapping("/delete/{id}")
-    public String deleteApartment(@PathVariable Integer id) {
-        apartmentService.delete(id);
-        return "redirect:/apartments";
+    @ResponseBody
+    public ResponseEntity<?> deleteApartment(@PathVariable Integer id) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            apartmentService.delete(id);
+            response.put("success", true);
+            response.put("message", "Apartment deleted successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error deleting apartment: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 }

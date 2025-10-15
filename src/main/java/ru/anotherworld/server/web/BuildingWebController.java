@@ -1,5 +1,7 @@
 package ru.anotherworld.server.web;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -8,6 +10,8 @@ import ru.anotherworld.server.rest.model.BuildingDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/buildings")
@@ -29,13 +33,25 @@ public class BuildingWebController {
     }
 
     @PostMapping("/add")
-    public String addBuilding(@Validated @ModelAttribute("building") BuildingDTO building, 
-                            BindingResult result) {
+    @ResponseBody
+    public ResponseEntity<?> addBuilding(@Validated @RequestBody BuildingDTO building, 
+                                      BindingResult result) {
+        Map<String, Object> response = new HashMap<>();
         if (result.hasErrors()) {
-            return "building-form";
+            response.put("success", false);
+            response.put("errors", result.getAllErrors());
+            return ResponseEntity.badRequest().body(response);
         }
-        buildingService.add(building.getName(), building.getCode());
-        return "redirect:/buildings";
+        try {
+            buildingService.add(building.getName(), building.getCode());
+            response.put("success", true);
+            response.put("message", "Building added successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error adding building: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
     @GetMapping("/edit/{id}")
@@ -49,18 +65,40 @@ public class BuildingWebController {
     }
 
     @PostMapping("/edit")
-    public String updateBuilding(@Validated @ModelAttribute("building") BuildingDTO building,
-                               BindingResult result) {
+    @ResponseBody
+    public ResponseEntity<?> updateBuilding(@Validated @RequestBody BuildingDTO building,
+                                         BindingResult result) {
+        Map<String, Object> response = new HashMap<>();
         if (result.hasErrors()) {
-            return "building-form";
+            response.put("success", false);
+            response.put("errors", result.getAllErrors());
+            return ResponseEntity.badRequest().body(response);
         }
-        buildingService.update(building.getId(), building.getName(), building.getCode());
-        return "redirect:/buildings";
+        try {
+            buildingService.update(building.getId(), building.getName(), building.getCode());
+            response.put("success", true);
+            response.put("message", "Building updated successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error updating building: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
     @PostMapping("/delete/{id}")
-    public String deleteBuilding(@PathVariable Integer id) {
-        buildingService.delete(id);
-        return "redirect:/buildings";
+    @ResponseBody
+    public ResponseEntity<?> deleteBuilding(@PathVariable Integer id) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            buildingService.delete(id);
+            response.put("success", true);
+            response.put("message", "Building deleted successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error deleting building: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 }

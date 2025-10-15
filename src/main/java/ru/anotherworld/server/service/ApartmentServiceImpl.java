@@ -85,13 +85,19 @@ public class ApartmentServiceImpl implements ApartmentService {
     @Override
     public ApartmentDTO update(Integer id, String number, Float totalSquare, Float livingSquare, Integer roomsAmount, Integer floor, Integer buildingId) {
         ApartmentPE apartment = apartmentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Building not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Apartment not found with id: " + id));
+                
+        BuildingPE building = buildingRepository.findById(buildingId)
+                .orElseThrow(() -> new RuntimeException("Building not found with id: " + buildingId));
+                
         apartment.setNumber(number);
         apartment.setTotalSquare(totalSquare);
         apartment.setLivingSquare(livingSquare);
         apartment.setRoomsAmount(roomsAmount);
         apartment.setFloor(floor);
-        return objectMapper.convertValue(apartmentRepository.save(apartment), ApartmentDTO.class);
+        apartment.setBuilding(building);
+        
+        return convertToApartmentDTO(apartmentRepository.save(apartment));
     }
 
     @Override

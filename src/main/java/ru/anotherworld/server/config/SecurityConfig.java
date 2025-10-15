@@ -57,7 +57,16 @@ public class SecurityConfig {
                         .permitAll()
                 )
                 .exceptionHandling(e -> e.accessDeniedPage("/access-denied"))
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
+                .csrf(csrf -> csrf
+                    .ignoringRequestMatchers(
+                            "/register",
+                        "/h2-console/**",
+                        "/buildings/**",
+                        "/apartments/**",
+                        "/electricity/**",
+                        "/watersupply/**"
+                    )
+                )
                 .headers(headers -> headers.frameOptions().sameOrigin());
 
         return http.build();

@@ -1,6 +1,8 @@
 package ru.anotherworld.server.web;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -9,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.anotherworld.server.rest.model.WaterSupplyDTO;
 import ru.anotherworld.server.service.WaterSupplyService;
 import ru.anotherworld.server.service.ApartmentService;
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/watersupply")
@@ -21,6 +25,7 @@ public class WaterSupplyWebController {
     @GetMapping
     public String listWaterSupply(Model model) {
         model.addAttribute("waterSupplyList", waterSupplyService.listAll());
+        model.addAttribute("apartments", apartmentService.listAll());
         return "watersupply-list";
     }
 
@@ -32,24 +37,34 @@ public class WaterSupplyWebController {
     }
 
     @PostMapping("/add")
-    public String addWaterSupply(
-            @Validated @ModelAttribute("waterSupply") WaterSupplyDTO waterSupply,
-            BindingResult result,
-            Model model) {
+    @ResponseBody
+    public ResponseEntity<?> addWaterSupply(
+            @Validated @RequestBody WaterSupplyDTO waterSupply,
+            BindingResult result) {
         
+        Map<String, Object> response = new HashMap<>();
         if (result.hasErrors()) {
-            model.addAttribute("apartments", apartmentService.listAll());
-            return "watersupply-form";
+            response.put("success", false);
+            response.put("errors", result.getAllErrors());
+            return ResponseEntity.badRequest().body(response);
         }
         
-        waterSupplyService.add(
-            waterSupply.getCold(),
-            waterSupply.getHot(),
-            waterSupply.getDebt() != null ? waterSupply.getDebt() : 0f,
-            waterSupply.getActive() != null ? waterSupply.getActive() : false,
-            waterSupply.getId()
-        );
-        return "redirect:/watersupply";
+        try {
+            waterSupplyService.add(
+                waterSupply.getCold(),
+                waterSupply.getHot(),
+                waterSupply.getDebt() != null ? waterSupply.getDebt() : 0f,
+                waterSupply.getActive() != null ? waterSupply.getActive() : false,
+                waterSupply.getId()
+            );
+            response.put("success", true);
+            response.put("message", "Water supply record added successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error adding water supply record: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
     @GetMapping("/edit/{id}")
@@ -57,36 +72,55 @@ public class WaterSupplyWebController {
         WaterSupplyDTO waterSupply = waterSupplyService.findById(id);
         if (waterSupply != null) {
             model.addAttribute("waterSupply", waterSupply);
-            model.addAttribute("apartments", apartmentService.listAll());
             return "watersupply-form";
         }
         return "redirect:/watersupply";
     }
 
     @PostMapping("/edit")
-    public String updateWaterSupply(
-            @Validated @ModelAttribute("waterSupply") WaterSupplyDTO waterSupply,
-            BindingResult result,
-            Model model) {
+    @ResponseBody
+    public ResponseEntity<?> updateWaterSupply(
+            @Validated @RequestBody WaterSupplyDTO waterSupply,
+            BindingResult result) {
         
+        Map<String, Object> response = new HashMap<>();
         if (result.hasErrors()) {
-            model.addAttribute("apartments", apartmentService.listAll());
-            return "watersupply-form";
+            response.put("success", false);
+            response.put("errors", result.getAllErrors());
+            return ResponseEntity.badRequest().body(response);
         }
         
-        waterSupplyService.update(
-            waterSupply.getId(),
-            waterSupply.getCold(),
-            waterSupply.getHot(),
-            waterSupply.getDebt() != null ? waterSupply.getDebt() : 0f,
-            waterSupply.getActive() != null ? waterSupply.getActive() : false
-        );
-        return "redirect:/watersupply";
+        try {
+            waterSupplyService.update(
+                waterSupply.getId(),
+                waterSupply.getCold(),
+                waterSupply.getHot(),
+                waterSupply.getDebt() != null ? waterSupply.getDebt() : 0f,
+                waterSupply.getActive() != null ? waterSupply.getActive() : false
+            );
+            response.put("success", true);
+            response.put("message", "Water supply record updated successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error updating water supply record: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
     @PostMapping("/delete/{id}")
-    public String deleteWaterSupply(@PathVariable Integer id) {
-        waterSupplyService.delete(id);
-        return "redirect:/watersupply";
+    @ResponseBody
+    public ResponseEntity<?> deleteWaterSupply(@PathVariable Integer id) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            waterSupplyService.delete(id);
+            response.put("success", true);
+            response.put("message", "Water supply record deleted successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error deleting water supply record: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 }

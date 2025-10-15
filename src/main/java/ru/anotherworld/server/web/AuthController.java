@@ -1,15 +1,17 @@
 package ru.anotherworld.server.web;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 public class AuthController {
@@ -18,7 +20,7 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
 
     public AuthController(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
-        this.userDetailsService = userDetailsService;
+        this.userDetailsService = (InMemoryUserDetailsManager)userDetailsService;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -32,42 +34,47 @@ public class AuthController {
         return "register";
     }
 
-    @PostMapping("/register")
-    public String registerUser(
-            @RequestParam String username,
-            @RequestParam String password,
-            @RequestParam String confirmPassword,
-            Model model) {
+    @PostMapping(value = "/register", consumes = "application/json")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> registerUser(@RequestBody Map<String, String> request) {
+        Map<String, Object> response = new HashMap<>();
+        String username = request.get("username");
+        String password = request.get("password");
 
-        if (((InMemoryUserDetailsManager)userDetailsService).userExists(username)) {
-            model.addAttribute("error", "Пользователь с таким именем уже существует");
-            return "register";
+        if (username == null || username.trim().isEmpty()) {
+            response.put("message", "Имя пользователя не может быть пустым");
+            return ResponseEntity.badRequest().body(response);
         }
-
-        if (!password.equals(confirmPassword)) {
-            model.addAttribute("error", "Пароли не совпадают");
-            return "register";
+        if (password == null || password.trim().isEmpty()) {
+            response.put("message", "Пароль не может быть пустым");
+            return ResponseEntity.badRequest().body(response);
         }
-
         if (password.length() < 6) {
-            model.addAttribute("error", "Пароль должен содержать не менее 6 символов");
-            return "register";
+            response.put("message", "Пароль должен содержать не менее 6 символов");
+            return ResponseEntity.badRequest().body(response);
+        }
+        if (((InMemoryUserDetailsManager)userDetailsService).userExists(username.trim())) {
+            response.put("message", "Пользователь с таким именем уже существует");
+            return ResponseEntity.badRequest().body(response);
         }
 
-        try {
-            UserDetails user = User.builder()
-                    .username(username)
-                    .password(passwordEncoder.encode(password))
-                    .roles("USER")
-                    .build();
+        var newUser = User.withUsername(username.trim())
+                .password(passwordEncoder.encode(password))
+                .roles("USER")
+                .build();
+        ((InMemoryUserDetailsManager)userDetailsService).createUser(newUser);
 
-            ((InMemoryUserDetailsManager)userDetailsService).createUser(user);
-            model.addAttribute("success", true);
-            return "register";
+        response.put("success", true);
+        response.put("redirect", "/login");
+        return ResponseEntity.ok(response);
+    }
 
-        } catch (Exception e) {
-            model.addAttribute("error", "Произошла ошибка при регистрации. Пожалуйста, попробуйте снова.");
-            return "register";
-        }
+    @PostMapping("/login")
+    @ResponseBody
+    public ResponseEntity<?> loginUser() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("redirect", "/");
+        return ResponseEntity.ok(response);
     }
 }

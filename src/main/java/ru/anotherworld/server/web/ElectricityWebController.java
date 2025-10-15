@@ -1,6 +1,8 @@
 package ru.anotherworld.server.web;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -9,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 import ru.anotherworld.server.rest.model.ElectricityDTO;
 import ru.anotherworld.server.service.ElectricityService;
 import ru.anotherworld.server.service.ApartmentService;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/electricity")
@@ -21,6 +26,7 @@ public class ElectricityWebController {
     @GetMapping
     public String listElectricity(Model model) {
         model.addAttribute("electricityList", electricityService.listAll());
+        model.addAttribute("apartments", apartmentService.listAll());
         return "electricity-list";
     }
 
@@ -32,24 +38,34 @@ public class ElectricityWebController {
     }
 
     @PostMapping("/add")
-    public String addElectricity(
-            @Validated @ModelAttribute("electricity") ElectricityDTO electricity,
-            BindingResult result,
-            Model model) {
+    @ResponseBody
+    public ResponseEntity<?> addElectricity(
+            @Validated @RequestBody ElectricityDTO electricity,
+            BindingResult result) {
         
+        Map<String, Object> response = new HashMap<>();
         if (result.hasErrors()) {
-            model.addAttribute("apartments", apartmentService.listAll());
-            return "electricity-form";
+            response.put("success", false);
+            response.put("errors", result.getAllErrors());
+            return ResponseEntity.badRequest().body(response);
         }
         
-        electricityService.add(
-            electricity.getDay(),
-            electricity.getNight(),
-            electricity.getDebt() != null ? electricity.getDebt() : 0f,
-            electricity.getActive() != null ? electricity.getActive() : false,
-            electricity.getId()
-        );
-        return "redirect:/electricity";
+        try {
+            electricityService.add(
+                electricity.getDay(),
+                electricity.getNight(),
+                electricity.getDebt() != null ? electricity.getDebt() : 0f,
+                electricity.getActive() != null ? electricity.getActive() : false,
+                electricity.getId()
+            );
+            response.put("success", true);
+            response.put("message", "Electricity record added successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error adding electricity record: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
     @GetMapping("/edit/{id}")
@@ -64,29 +80,49 @@ public class ElectricityWebController {
     }
 
     @PostMapping("/edit")
-    public String updateElectricity(
-            @Validated @ModelAttribute("electricity") ElectricityDTO electricity,
-            BindingResult result,
-            Model model) {
+    @ResponseBody
+    public ResponseEntity<?> updateElectricity(
+            @Validated @RequestBody ElectricityDTO electricity,
+            BindingResult result) {
         
+        Map<String, Object> response = new HashMap<>();
         if (result.hasErrors()) {
-            model.addAttribute("apartments", apartmentService.listAll());
-            return "electricity-form";
+            response.put("success", false);
+            response.put("errors", result.getAllErrors());
+            return ResponseEntity.badRequest().body(response);
         }
         
-        electricityService.update(
-            electricity.getId(),
-            electricity.getDay(),
-            electricity.getNight(),
-            electricity.getDebt() != null ? electricity.getDebt() : 0f,
-            electricity.getActive() != null ? electricity.getActive() : false
-        );
-        return "redirect:/electricity";
+        try {
+            electricityService.update(
+                electricity.getId(),
+                electricity.getDay(),
+                electricity.getNight(),
+                electricity.getDebt() != null ? electricity.getDebt() : 0f,
+                electricity.getActive() != null ? electricity.getActive() : false
+            );
+            response.put("success", true);
+            response.put("message", "Electricity record updated successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error updating electricity record: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
     @PostMapping("/delete/{id}")
-    public String deleteElectricity(@PathVariable Integer id) {
-        electricityService.delete(id);
-        return "redirect:/electricity";
+    @ResponseBody
+    public ResponseEntity<?> deleteElectricity(@PathVariable Integer id) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            electricityService.delete(id);
+            response.put("success", true);
+            response.put("message", "Electricity record deleted successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error deleting electricity record: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 }
