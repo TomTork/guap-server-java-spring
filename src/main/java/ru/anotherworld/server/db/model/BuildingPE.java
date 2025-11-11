@@ -13,7 +13,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "BUILDING")
+@Table(name = "building")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -28,14 +28,14 @@ public class BuildingPE implements Serializable {
     }
 
     @Id
-    @Column(name = "BUILDING_ID")
+    @Column(name = "building_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "BUILDING_NAME", nullable = false)
+    @Column(name = "building_name", nullable = false)
     private String name;
 
-    @Column(name = "BUILDING_CODE", nullable = false, unique = true)
+    @Column(name = "building_code", nullable = false, unique = true)
     private String code;
 
     @OneToMany(mappedBy = "building", fetch = FetchType.LAZY, cascade = CascadeType.ALL)

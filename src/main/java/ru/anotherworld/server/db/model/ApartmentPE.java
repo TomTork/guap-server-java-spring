@@ -20,7 +20,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "APARTMENT")
+@Table(name = "apartment")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -39,27 +39,27 @@ public class ApartmentPE implements Serializable {
     }
 
     @Id
-    @Column(name = "APARTMENT_ID")
+    @Column(name = "apartment_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "APARTMENT_NUMBER", nullable = false)
+    @Column(name = "apartment_number", nullable = false)
     private String number;
 
-    @Column(name = "TOTAL_SQUARE", nullable = false)
+    @Column(name = "total_square", nullable = false)
     private Float totalSquare;
 
-    @Column(name = "LIVING_SQUARE", nullable = false)
+    @Column(name = "living_square", nullable = false)
     private Float livingSquare;
 
-    @Column(name = "ROOMS_AMOUNT", nullable = false)
+    @Column(name = "rooms_amount", nullable = false)
     private Integer roomsAmount;
 
-    @Column(name = "FLOOR", nullable = false)
+    @Column(name = "floor", nullable = false)
     private Integer floor;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "BUILDING_ID", nullable = false)
+    @JoinColumn(name = "building_id", nullable = false)
     @JsonIgnore
     private BuildingPE building;
 

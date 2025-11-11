@@ -17,7 +17,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "ELECTRICITY")
+@Table(name = "electricity")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -34,23 +34,23 @@ public class ElectricityPE implements Serializable {
     }
 
     @Id
-    @Column(name = "APARTMENT_ID")
+    @Column(name = "apartment_id")
     private Integer id;
 
-    @Column(name = "DAY_CONSUMPTION", nullable = false)
+    @Column(name = "day_consumption", nullable = false)
     private Long day;
 
-    @Column(name = "NIGHT_CONSUMPTION", nullable = false)
+    @Column(name = "night_consumption", nullable = false)
     private Long night;
 
-    @Column(name = "DEBT", nullable = false, columnDefinition = "FLOAT DEFAULT 0")
+    @Column(name = "debt", nullable = false, columnDefinition = "FLOAT DEFAULT 0")
     private Float debt = 0.0f;
 
-    @Column(name = "ACTIVE", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
+    @Column(name = "active", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
     private Boolean active = true;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "APARTMENT_ID", nullable = false)
+    @JoinColumn(name = "apartment_id", nullable = false)
     @JsonIgnore
     private ApartmentPE apartment;
 }
