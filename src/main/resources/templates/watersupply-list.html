@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Учет водоснабжения</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .header {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header h1 {
+            margin: 0;
+        }
+        .table {
+            margin-top: 20px;
+            background-color: white;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border-radius: 0.25rem;
+            overflow: hidden;
+        }
+        .action-buttons {
+            white-space: nowrap;
+            display: flex;
+            gap: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Учет водоснабжения</h1>
+        <div class="d-flex gap-2">
+            <a th:href="@{/}" class="btn btn-secondary">На главную</a>
+            <a th:href="@{/watersupply/add}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> Добавить показания
+            </a>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Квартира</th>
+                <th>Холодная вода</th>
+                <th>Горячая вода</th>
+                <th>Долг</th>
+                <th>Статус</th>
+                <th>Действия</th>
+            </tr>
+            </thead>
+            <tbody id="waterSupplyTableBody">
+            <tr th:each="water : ${waterSupplyList}" th:data-id="${water.id}">
+                <td th:text="${water.id}"></td>
+                <td>
+                    <div th:if="${apartments.get(water.getId())}">
+                        Кв. <span th:text="${apartments.get(water.getId()).getNumber()}"></span>
+                    </div>
+                </td>
+                <td th:text="${water.cold}"></td>
+                <td th:text="${water.hot}"></td>
+                <td th:text="${water.debt}"></td>
+                <td>
+                    <span th:if="${water.active}" class="badge bg-success">Активно</span>
+                    <span th:unless="${water.active}" class="badge bg-secondary">Неактивно</span>
+                </td>
+                <td class="action-buttons">
+                    <a th:href="@{/watersupply/edit/{id}(id=${water.id})}" class="btn btn-sm btn-warning">Изменить</a>
+                    <button type="button" class="btn btn-sm btn-danger delete-btn" th:data-id="${water.id}">Удалить</button>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(waterSupplyList)}">
+                <td colspan="7" class="text-center">Нет доступных записей</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $(document).on('click', '.delete-btn', function() {
+            const $button = $(this);
+            const id = $button.data('id');
+
+            $.ajax({
+                url: `/watersupply/delete/${id}`,
+                type: 'POST',
+                success: function() {
+                    $(`tr[data-id="${id}"]`).fadeOut(0, function() {
+                        $(this).remove();
+                        if ($('#waterSupplyTableBody tr').length === 0) {
+                            $('#waterSupplyTableBody').html(`
+                                <tr>
+                                    <td colspan="7" class="text-center">Нет доступных записей</td>
+                                </tr>
+                            `);
+                        }
+                    });
+                },
+                error: function(xhr) {
+                    let errorMessage = 'Ошибка при удалении записи';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                        console.log(errorMessage);
+                    }
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

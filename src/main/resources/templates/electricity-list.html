@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Учет электроэнергии</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .header {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header h1 {
+            margin: 0;
+        }
+        .table {
+            margin-top: 20px;
+            background-color: white;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border-radius: 0.25rem;
+            overflow: hidden;
+        }
+        .action-buttons {
+            white-space: nowrap;
+            display: flex;
+            gap: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Учет электроэнергии</h1>
+        <div class="d-flex gap-2">
+            <a th:href="@{/}" class="btn btn-secondary">На главную</a>
+            <a th:href="@{/electricity/add}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> Добавить показания
+            </a>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Квартира</th>
+                <th>День</th>
+                <th>Ночь</th>
+                <th>Долг</th>
+                <th>Статус</th>
+                <th>Действия</th>
+            </tr>
+            </thead>
+            <tbody id="electricityTableBody">
+            <tr th:each="electricity : ${electricityList}" th:data-electricity-id="${electricity.id}">
+                <td th:text="${electricity.id}"></td>
+                <td>
+                    <div th:if="${apartments.get(electricity.getId())}">
+                        <div>Кв. <span th:text="${apartments.get(electricity.getId()).getNumber()}"></span></div>
+                    </div>
+                </td>
+                <td th:text="${electricity.day}"></td>
+                <td th:text="${electricity.night}"></td>
+                <td th:text="${electricity.debt}"></td>
+                <td>
+                    <span th:if="${electricity.active}" class="badge bg-success">Активно</span>
+                    <span th:unless="${electricity.active}" class="badge bg-secondary">Неактивно</span>
+                </td>
+                <td class="action-buttons">
+                    <a th:href="@{/electricity/edit/{id}(id=${electricity.id})}"
+                       class="btn btn-sm btn-warning"
+                       title="Изменить">
+                        Изменить
+                    </a>
+                    <button type="button"
+                            class="btn btn-sm btn-danger delete-btn"
+                            th:data-id="${electricity.id}"
+                            title="Удалить">
+                        <span>Удалить</span>
+                    </button>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(electricityList)}">
+                <td colspan="7" class="text-center">Нет доступных записей</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $(document).on('click', '.delete-btn', function() {
+            const $button = $(this);
+            const id = $button.data('id');
+
+            $.ajax({
+                url: `/electricity/delete/${id}`,
+                type: 'POST',
+                success: function() {
+                    $(`tr[data-electricity-id="${id}"]`).fadeOut(0, function() {
+                        $(this).remove();
+                        if ($('#electricityTableBody tr').length === 0) {
+                            $('#electricityTableBody').html(`
+                                <tr>
+                                    <td colspan="7" class="text-center">Нет доступных записей</td>
+                                </tr>
+                            `);
+                        }
+                    });
+                },
+                error: function(xhr) {
+                    let errorMessage = 'Ошибка при удалении записи';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                        console.log(errorMessage);
+                    }
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

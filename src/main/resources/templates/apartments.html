@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Управление квартирами</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .header {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header h1 {
+            margin: 0;
+        }
+        .table {
+            margin-top: 20px;
+            background-color: white;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border-radius: 0.25rem;
+            overflow: hidden;
+        }
+        .action-buttons {
+            white-space: nowrap;
+            display: flex;
+            gap: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Управление квартирами</h1>
+        <div class="d-flex gap-2">
+            <a th:href="@{/}" class="btn btn-secondary">На главную</a>
+            <a th:href="@{/apartments/add}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> Добавить квартиру
+            </a>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Номер</th>
+                <th>Общая площадь</th>
+                <th>Жилая площадь</th>
+                <th>Комнат</th>
+                <th>Этаж</th>
+                <th>Здание</th>
+                <th>Действия</th>
+            </tr>
+            </thead>
+            <tbody id="apartments-table-body">
+            <tr th:each="apartment : ${apartments}" th:data-apartment-id="${apartment.id}">
+                <td th:text="${apartment.id}"></td>
+                <td th:text="'Кв. ' + ${apartment.number}"></td>
+                <td th:text="${#numbers.formatDecimal(apartment.totalSquare, 1, 2)} + ' м²'"></td>
+                <td th:with="livingSquare=${apartment.livingSquare}" th:text="${livingSquare != null} ? ${#numbers.formatDecimal(livingSquare, 1, 2) + ' м²'} : '-'"></td>
+                <td th:text="${apartment.roomsAmount}"></td>
+                <td th:text="${apartment.floor}"></td>
+                <td th:text="${apartment.getBuildingName()}"></td>
+                <td class="action-buttons">
+                    <a th:href="@{/apartments/edit/{id}(id=${apartment.id})}"
+                       class="btn btn-sm btn-warning"
+                       title="Изменить">
+                        Изменить
+                    </a>
+                    <button type="button"
+                            id="confirmDelete"
+                            class="btn btn-sm btn-danger delete-btn"
+                            th:data-id="${apartment.id}"
+                            th:data-name="'Кв. ' + ${apartment.number}"
+                            title="Удалить">
+                        <span>Удалить</span>
+                    </button>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(apartments)}">
+                <td colspan="8" class="text-center">Нет доступных квартир</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $(document).on('click', '.delete-btn', function() {
+            const $button = $(this);
+            const id = $button.data('id');
+
+            // Send AJAX request
+            $.ajax({
+                url: `/apartments/delete/${id}`,
+                type: 'POST',
+                success: function() {
+                    $(`tr[data-apartment-id="${id}"]`).fadeOut(0, function() {
+                        $(this).remove();
+                        if ($('#apartments-table-body tr').length === 0) {
+                            $('#apartments-table-body').html(`
+                                <tr>
+                                    <td colspan="8" class="text-center">Нет доступных квартир</td>
+                                </tr>
+                            `);
+                        }
+                    });
+                },
+                error: function(xhr) {
+                    let errorMessage = 'Ошибка при удалении квартиры';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                        console.log(errorMessage);
+                    }
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

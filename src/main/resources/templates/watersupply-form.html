@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${waterSupply.id} ? 'Редактирование показаний воды' : 'Добавление показаний воды'"></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #f8f9fa;
+        }
+        .form-actions {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1 class="mb-4" th:text="${waterSupply.id} ? 'Редактирование показаний воды' : 'Добавление показаний воды'"></h1>
+
+    <form id="waterSupplyForm" th:object="${waterSupply}" class="needs-validation" novalidate>
+        <input type="hidden" id="id" name="id" th:value="*{id}">
+        
+        <div class="mb-3" th:if="${waterSupply.id}">
+            <label class="form-label">ID квартиры</label>
+            <div class="form-control">
+                <span th:text="${waterSupply.id}"></span>
+            </div>
+        </div>
+        
+        <div class="mb-3" th:unless="${waterSupply.id}">
+            <label for="apartmentId" class="form-label">ID квартиры</label>
+            <input type="number" class="form-control" id="apartmentId" name="apartmentId" 
+                   th:value="${waterSupply.id}" min="1" required>
+            <div class="invalid-feedback">Пожалуйста, укажите ID квартиры</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="cold" class="form-label">Холодная вода</label>
+            <input type="number" step="0.001" min="0" class="form-control" id="cold"
+                   name="cold" th:value="*{cold}" required>
+            <div class="invalid-feedback">Пожалуйста, укажите показания холодной воды</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="hot" class="form-label">Горячая вода</label>
+            <input type="number" step="0.001" min="0" class="form-control" id="hot"
+                   name="hot" th:value="*{hot}" required>
+            <div class="invalid-feedback">Пожалуйста, укажите показания горячей воды</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="debt" class="form-label">Долг</label>
+            <input type="number" step="0.01" min="0" class="form-control" id="debt"
+                   name="debt" th:value="*{debt}" required>
+            <div class="invalid-feedback">Пожалуйста, укажите сумму задолженности</div>
+        </div>
+
+        <div class="mb-3 form-check">
+            <input class="form-check-input" type="checkbox" id="active"
+                   name="active" th:checked="${waterSupply.active != null ? waterSupply.active : true}">
+            <label class="form-check-label" for="active">Активные показания</label>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="submitBtn">Сохранить</button>
+            <a th:href="@{/watersupply}" class="btn btn-secondary">Отмена</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    $(document).ready(function() {
+        const $form = $('#waterSupplyForm');
+        const isEdit = !!$('#id').val();
+
+        $form.on('submit', function(e) {
+            e.preventDefault();
+
+            if (!this.checkValidity()) {
+                e.stopPropagation();
+                $(this).addClass('was-validated');
+                return;
+            }
+
+            const formData = {
+                cold: parseFloat($('#cold').val()) || 0,
+                hot: parseFloat($('#hot').val()) || 0,
+                debt: parseFloat($('#debt').val()) || 0,
+                active: $('#active').is(':checked'),
+                id: $('#id').val() || null,
+            };
+
+            if (formData.cold < 0 || formData.hot < 0 || formData.debt < 0) {
+                alert('Значения не могут быть отрицательными');
+                return;
+            }
+
+            const url = isEdit ? '/watersupply/edit' : '/watersupply/add';
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                success: function(response) {
+                    window.location.href = '/watersupply';
+                },
+                error: function(xhr) {
+                    let errorMessage = 'Произошла ошибка при сохранении';
+                    if (xhr.responseJSON) {
+                        if (xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        } else if (xhr.responseJSON.errors) {
+                            errorMessage = 'Ошибки валидации: ' + xhr.responseJSON.errors.map(e => e.defaultMessage).join(', ');
+                        }
+                    }
+                    alert(errorMessage);
+                },
+            });
+        });
+    });
+</script>
+</body>
+</html>
