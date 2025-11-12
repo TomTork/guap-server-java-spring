@@ -17,7 +17,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "WATER_SUPPLY")
+@Table(name = "water_supply")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -34,23 +34,23 @@ public class WaterSupplyPE implements Serializable {
     }
 
     @Id
-    @Column(name = "APARTMENT_ID")
+    @Column(name = "apartment_id")
     private Integer id;
 
-    @Column(name = "COLD_CONSUMPTION", nullable = false)
+    @Column(name = "cold_consumption", nullable = false)
     private Long cold;
 
-    @Column(name = "HOT_CONSUMPTION", nullable = false)
+    @Column(name = "hot_consumption", nullable = false)
     private Long hot;
 
-    @Column(name = "DEBT", nullable = false, columnDefinition = "FLOAT DEFAULT 0")
+    @Column(name = "debt", nullable = false, columnDefinition = "FLOAT DEFAULT 0")
     private Float debt = 0.0f;
 
-    @Column(name = "ACTIVE", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
+    @Column(name = "active", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
     private Boolean active = true;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "APARTMENT_ID", nullable = false)
+    @JoinColumn(name = "apartment_id", nullable = false)
     @JsonIgnore
     private ApartmentPE apartment;
 }

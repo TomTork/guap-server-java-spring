@@ -7,8 +7,11 @@ import ru.anotherworld.server.db.dao.ApartmentRepository;
 import ru.anotherworld.server.db.dao.BuildingRepository;
 import ru.anotherworld.server.db.model.ApartmentPE;
 import ru.anotherworld.server.db.model.BuildingPE;
+import ru.anotherworld.server.handler.EventSender;
+import ru.anotherworld.server.handler.event.ApartmentEvent;
 import ru.anotherworld.server.rest.model.ApartmentDTO;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,10 +22,12 @@ import ru.anotherworld.server.rest.model.WaterSupplyDTO;
 @Service
 @RequiredArgsConstructor
 public class ApartmentServiceImpl implements ApartmentService {
+    public boolean isSend = true;
 
     private final ApartmentRepository apartmentRepository;
     private final BuildingRepository buildingRepository;
     private final ObjectMapper objectMapper;
+    private final EventSender eventSender;
 
     @Override
     public List<ApartmentDTO> listAll() {
@@ -70,6 +75,16 @@ public class ApartmentServiceImpl implements ApartmentService {
 
     @Override
     public void delete(Integer id) {
+        ApartmentEvent event = new ApartmentEvent(id, "", 0, 0, 0, 0, 0);
+
+        try {
+            if (isSend) {
+                eventSender.create(event, "delete");
+            }
+        } catch (ExecutionException | InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Failed to send delete event", e);
+        }
         apartmentRepository.deleteById(id);
     }
 
@@ -79,7 +94,17 @@ public class ApartmentServiceImpl implements ApartmentService {
                 .orElseThrow(() -> new RuntimeException("Building not found with id: " + buildingId));
 
         ApartmentPE apartment = new ApartmentPE(number, totalSquare, livingSquare, roomsAmount, floor, building);
-        return convertToApartmentDTO(apartmentRepository.save(apartment));
+        ApartmentDTO result = convertToApartmentDTO(apartmentRepository.save(apartment));
+        try {
+            if (isSend) {
+                eventSender.create(result, "create");
+            }
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        return result;
     }
 
     @Override
@@ -96,8 +121,18 @@ public class ApartmentServiceImpl implements ApartmentService {
         apartment.setRoomsAmount(roomsAmount);
         apartment.setFloor(floor);
         apartment.setBuilding(building);
-        
-        return convertToApartmentDTO(apartmentRepository.save(apartment));
+
+        ApartmentDTO result = convertToApartmentDTO(apartmentRepository.save(apartment));
+        try {
+            if (isSend) {
+                eventSender.create(result, "update");
+            }
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        return result;
     }
 
     @Override

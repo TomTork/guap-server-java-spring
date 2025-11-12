@@ -4,6 +4,7 @@
  */
 package ru.anotherworld.server.rest;
 
+import ru.anotherworld.server.handler.EventSender;
 import ru.anotherworld.server.rest.model.ApartmentDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
