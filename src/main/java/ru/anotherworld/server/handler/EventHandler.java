@@ -32,13 +32,9 @@ public class EventHandler {
             switch (keys[0]) {
                 case "apartment":
                     apartmentService.isSend = false;
-                    String json = event.value().toString();
-                    System.out.println("Received Type: " + keys[1]);
-                    System.out.println("Received JSON: " + json);
-                    ObjectMapper objectMapper = new ObjectMapper();
                     try {
-                        apartment = objectMapper.readValue(json, ApartmentEvent.class);
-                    } catch (JsonProcessingException e) {
+                        apartment = (ApartmentEvent) event.value();
+                    } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
                     switch (keys[1]) {
