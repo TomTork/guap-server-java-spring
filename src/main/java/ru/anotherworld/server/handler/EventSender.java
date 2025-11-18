@@ -59,7 +59,11 @@ public class EventSender {
 
         return buildingDTO.getId().toString();
     }
-
+    public String create(BuildingEvent buildingDTO, String typeAction) throws ExecutionException, InterruptedException {
+        SendResult<String, Object> result = kafkaTemplate
+                .send("lab-work", "building," + typeAction + "," + serverType, buildingDTO).get();
+        return "";
+    }
     public String create(ElectricityDTO electricityDTO, String typeAction) throws ExecutionException, InterruptedException {
         ElectricityEvent electricityCreatedEvent = new ElectricityEvent(
                 electricityDTO.getId(),
@@ -74,6 +78,11 @@ public class EventSender {
 
         return electricityDTO.getId().toString();
     }
+    public String create(ElectricityEvent electricityDTO, String typeAction) throws ExecutionException, InterruptedException {
+        SendResult<String, Object> result = kafkaTemplate
+                .send("lab-work", "electricity," + typeAction + "," + serverType, electricityDTO).get();
+        return "";
+    }
     public String create(WaterSupplyDTO waterSupplyDTO, String typeAction) throws ExecutionException, InterruptedException {
         WaterSupplyEvent waterSupplyCreatedEvent = new WaterSupplyEvent(
                 waterSupplyDTO.getId(),
@@ -87,5 +96,10 @@ public class EventSender {
                 .send("lab-work", "water-supply," + typeAction + "," + serverType, waterSupplyCreatedEvent).get();
 
         return waterSupplyDTO.getId().toString();
+    }
+    public String create(WaterSupplyEvent waterSupplyDTO, String typeAction) throws ExecutionException, InterruptedException {
+        SendResult<String, Object> result = kafkaTemplate
+                .send("lab-work", "water-supply," + typeAction + "," + serverType, waterSupplyDTO).get();
+        return "";
     }
 }

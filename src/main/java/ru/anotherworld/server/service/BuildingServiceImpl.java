@@ -5,9 +5,12 @@ import org.springframework.stereotype.Service;
 
 import ru.anotherworld.server.db.dao.BuildingRepository;
 import ru.anotherworld.server.db.model.BuildingPE;
+import ru.anotherworld.server.handler.EventSender;
+import ru.anotherworld.server.handler.event.BuildingEvent;
 import ru.anotherworld.server.rest.model.BuildingDTO;
 import ru.anotherworld.server.rest.model.ApartmentDTO;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class BuildingServiceImpl implements BuildingService {
+    public boolean isSend = true;
+    private final EventSender eventSender;
 
     private final BuildingRepository buildingRepository;
     private final ObjectMapper objectMapper;
@@ -62,15 +67,34 @@ public class BuildingServiceImpl implements BuildingService {
 
     @Override
     public void delete(Integer id) {
+        BuildingEvent event = new BuildingEvent(id, "", "");
+
+        try {
+            if (isSend) {
+                eventSender.create(event, "delete");
+            }
+        } catch (ExecutionException | InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Failed to send delete event", e);
+        }
         buildingRepository.deleteById(id);
     }
 
     @Override
     public BuildingDTO add(String name, String code) {
-        return objectMapper.convertValue(
+        BuildingDTO result = objectMapper.convertValue(
             buildingRepository.save(new BuildingPE(name, code)),
             BuildingDTO.class
         );
+        try {
+            if (isSend) {
+                eventSender.create(result, "create");
+            }
+        } catch (ExecutionException | InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Failed to send create event", e);
+        }
+        return result;
     }
 
     @Override
@@ -81,7 +105,16 @@ public class BuildingServiceImpl implements BuildingService {
         building.setName(name);
         building.setCode(code);
         
-        return objectMapper.convertValue(buildingRepository.save(building), BuildingDTO.class);
+        BuildingDTO result = objectMapper.convertValue(buildingRepository.save(building), BuildingDTO.class);
+        try {
+            if (isSend) {
+                eventSender.create(result, "update");
+            }
+        } catch (ExecutionException | InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Failed to send update event", e);
+        }
+        return result;
     }
 
     @Override

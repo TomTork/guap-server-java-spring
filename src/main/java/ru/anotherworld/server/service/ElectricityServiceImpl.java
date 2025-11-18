@@ -5,8 +5,11 @@ import org.springframework.stereotype.Service;
 
 import ru.anotherworld.server.db.dao.ElectricityRepository;
 import ru.anotherworld.server.db.model.ElectricityPE;
+import ru.anotherworld.server.handler.EventSender;
+import ru.anotherworld.server.handler.event.ElectricityEvent;
 import ru.anotherworld.server.rest.model.ElectricityDTO;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class ElectricityServiceImpl implements ElectricityService {
+    public boolean isSend = true;
+    private final EventSender eventSender;
 
     private final ElectricityRepository electricityRepository;
     private final ObjectMapper objectMapper;
@@ -28,6 +33,15 @@ public class ElectricityServiceImpl implements ElectricityService {
 
     @Override
     public void delete(Integer apartmentId) {
+        ElectricityEvent event = new ElectricityEvent(apartmentId, 0, 0, 0, false);
+        try {
+            if (isSend) {
+                eventSender.create(event, "delete");
+            }
+        } catch (ExecutionException | InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Failed to send delete event", e);
+        }
         electricityRepository.deleteById(apartmentId);
     }
 
@@ -39,7 +53,16 @@ public class ElectricityServiceImpl implements ElectricityService {
         electricity.setNight(night);
         electricity.setDebt(debt);
         electricity.setActive(active);
-        return convertToElectricityDTO(electricityRepository.save(electricity));
+        ElectricityDTO result = convertToElectricityDTO(electricityRepository.save(electricity));
+        try {
+            if (isSend) {
+                eventSender.create(result, "create");
+            }
+        } catch (ExecutionException | InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Failed to send update event", e);
+        }
+        return result;
     }
 
     private ElectricityDTO convertToElectricityDTO(ElectricityPE electricityPE) {
@@ -60,7 +83,16 @@ public class ElectricityServiceImpl implements ElectricityService {
         electricity.setNight(night);
         electricity.setDebt(debt);
         electricity.setActive(active);
-        return objectMapper.convertValue(electricityRepository.save(electricity), ElectricityDTO.class);
+        ElectricityDTO result = objectMapper.convertValue(electricityRepository.save(electricity), ElectricityDTO.class);
+        try {
+            if (isSend) {
+                eventSender.create(result, "update");
+            }
+        } catch (ExecutionException | InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Failed to send update event", e);
+        }
+        return result;
     }
 
     @Override
